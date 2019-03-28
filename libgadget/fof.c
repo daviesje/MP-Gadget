@@ -257,6 +257,8 @@ HEADl(int stop, int i, int locked, int * Head)
     if (i == stop) {
         return -1;
     }
+
+#ifndef NO_OPENMP_SPINLOCK
 //    printf("locking %d by %d in HEADl stop = %d\n", i, omp_get_thread_num(), stop);
     /* Try to lock the particle. Wait on the lock if it is less than the already locked particle,
      * or if such a particle does not exist. We could use atomic to avoid the lock, but this
@@ -272,6 +274,8 @@ HEADl(int stop, int i, int locked, int * Head)
             return -2;
         }
     }
+#endif
+
 //    printf("locked %d by %d in HEADl, next = %d\n", i, omp_get_thread_num(), FOF_PRIMARY_GET_PRIV(tw)->Head[i]);
     /* atomic read because we may change
      * this in update_root without the lock: not necessary on x86_64, but avoids tears elsewhere*/
