@@ -9,7 +9,10 @@ MPICXX       =   mpic++
 OPTIMIZE =  -fopenmp -O3 -g -Wall -ffast-math -march=native
 #This fixes linker errors on Mac.
 #Without it uninitialised variables are not included in static libraries.
-OPTIMIZE += -fnocommon
+OPTIMIZE += -fno-common
+
+# Find the sdk path on Mac
+OPT += -isysroot $(shell xcrun -sdk macosx --show-sdk-path)
 
 GSL_INCL = $(shell pkg-config --cflags gsl)
 GSL_LIBS = $(shell pkg-config --libs gsl)
