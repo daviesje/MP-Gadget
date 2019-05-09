@@ -24,6 +24,7 @@
 #include "sfr_eff.h"
 #include "slotsmanager.h"
 #include "hci.h"
+#include "uvbg.h"
 
 void energy_statistics(void); /* stats.c only used here */
 void init(int snapnum); /* init.c only used here */
@@ -204,10 +205,12 @@ void run(void)
 
         int WriteSnapshot = 0;
         int WriteFOF = 0;
+        int CalcUVBG = 0;
 
         if(planned_sync) {
             WriteSnapshot |= planned_sync->write_snapshot;
             WriteFOF |= planned_sync->write_fof;
+            CalcUVBG |= planned_sync->calc_uvbg;
         }
 
         if(is_PM) { /* the if here is unnecessary but to signify checkpointing occurs only at PM steps. */
@@ -223,6 +226,10 @@ void run(void)
                 force_tree_rebuild();
                 NumActiveParticle = PartManager->NumPart;
             }
+        }
+
+        if(CalcUVBG) {
+            calculate_uvbg();
         }
 
         write_checkpoint(WriteSnapshot, WriteFOF);

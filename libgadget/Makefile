@@ -35,6 +35,7 @@ INCL = config.h densitykernel.h \
 	walltime.h \
 	neutrinos_lra.h \
 	omega_nu_single.h \
+	uvbg.h \
 utils/peano.h \
 utils/interp.h \
 utils/paramset.h \
@@ -96,6 +97,7 @@ GADGET_OBJS =  \
 	 runtests.o \
 	 neutrinos_lra.o \
      omega_nu_single.o \
+	 uvbg.o
 
 GADGET_UTILS_OBJS= \
 utils/endrun.o \
