@@ -6,14 +6,14 @@ HIGH_PRECISION ?= double
 
 OPTIONS = $(OPTIMIZE) $(OPT)
 
-CFLAGS = $(OPTIONS) $(GSL_INCL)
+CFLAGS = $(OPTIONS) $(GSL_INCL) $(FFTW_INCL)
 CFLAGS += -I../depends/include
 CFLAGS += -I../
 CFLAGS += "-DLOW_PRECISION=$(LOW_PRECISION)"
 CFLAGS += "-DHIGH_PRECISION=$(HIGH_PRECISION)"
 
 BUNDLEDLIBS = -lmpsort-mpi -lradixsort -lbigfile-mpi -lbigfile -lpfft_omp -lfftw3_mpi -lfftw3_omp -lfftw3
-LIBS  = -lm $(GSL_LIBS)
+LIBS  = -lm $(GSL_LIBS) $(FFTW_LIBS)
 LIBS += -L../depends/lib $(BUNDLEDLIBS)
 V ?= 0
 
