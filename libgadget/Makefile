@@ -115,7 +115,7 @@ utils/string.o
 GADGET_OBJS := $(GADGET_OBJS:%=.objs/%)
 GADGET_UTILS_OBJS := $(GADGET_UTILS_OBJS:%=.objs/%)
 
-all: libgadget.a libgadget-utils.a
+all: libgadget.a libgadget-utils.a compile_commands.json
 
 .PHONY: all test run-tests
 
@@ -152,3 +152,21 @@ config.h: Makefile $(CONFIG) $(INCL:config.h=)
 	mkdir -p `dirname $@`
 	MPICC="$(MPICC)" CFLAGS="$(CFLAGS)" OPT="$(OPT)" OPTIMIZE="$(OPTIMIZE)" VERSION="$(VERSION)" bash makeconfig.sh $@
 
+MPI_SHOWME := $(shell $(MPICC) -showme)
+
+.objs/%.compdb_entry: %.c
+	@echo "    {" > $@
+	@echo "        \"command\": \"$(MPI_SHOWME) $(CFLAGS) -c $<\","   >> $@
+	@echo "        \"directory\": \"$(CURDIR)\","               >> $@
+	@echo "        \"file\": \"$<\""                    >> $@
+	@echo "    },"                              >> $@
+
+COMPDB_ENTRIES = $(addsuffix .compdb_entry, $(basename $(GADGET_OBJS)))
+
+compile_commands.json: $(COMPDB_ENTRIES)
+	@echo "[" > $@.tmp
+	@cat $^ >> $@.tmp
+	@sed '$$d' < $@.tmp > $@
+	@echo "    }" >> $@
+	@echo "]" >> $@
+	@rm $@.tmp
