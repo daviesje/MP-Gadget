@@ -30,6 +30,8 @@
 #include "forcetree.h"
 #include "timestep.h"
 #include "domain.h"
+#include "uvbg.h"
+
 /*Cooling only: no star formation*/
 static void cooling_direct(int i);
 
@@ -392,6 +394,11 @@ static int make_particle_star(int child, int parent, int placement)
     STARP(child).BirthDensity = oldslot.Density;
     /*Copy metallicity*/
     STARP(child).Metallicity = oldslot.Metallicity;
+
+    // Add this to the gross stellar mass grid
+    UVBGgrids.stars[0]++;
+    // TODO(smutch): THIS!!!!
+
     return retflag;
 }
 
