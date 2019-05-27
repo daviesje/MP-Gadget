@@ -265,6 +265,8 @@ void run(void)
     }
 
     close_outputfiles();
+
+    free_permanent_uvbg_grids();
 }
 
 /*! This routine computes the accelerations for all active particles.  First, the gravitational forces are

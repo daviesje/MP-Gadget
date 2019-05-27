@@ -22,6 +22,7 @@
 #include "timestep.h"
 #include "timebinmgr.h"
 #include "cosmology.h"
+#include "uvbg.h"
 
 /*! \file init.c
  *  \brief code for initialisation of a simulation from initial conditions
@@ -131,6 +132,8 @@ void init(int RestartSnapNum)
     NumActiveParticle = PartManager->NumPart;
 
     setup_smoothinglengths(RestartSnapNum);
+
+    malloc_permanent_uvbg_grids();
 }
 
 
