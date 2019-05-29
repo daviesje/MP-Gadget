@@ -1084,6 +1084,8 @@ static double GetReionizedFraction(double time) {
  *
  * */
 void GetParticleUVBG(int i, struct UVBG * uvbg) {
+    // TODO(smutch): Replace this function
+
     double z = 1 / All.cf.a - 1;
     if(All.UVRedshiftThreshold >= 0.0 && z > All.UVRedshiftThreshold) {
         /* if a threshold is set, disable UV bg above that redshift */
