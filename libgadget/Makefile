@@ -163,6 +163,9 @@ MPI_SHOWME := $(shell $(MPICC) -showme)
 
 COMPDB_ENTRIES = $(addsuffix .compdb_entry, $(basename $(GADGET_OBJS)))
 
+# This target produces a `compile_commands.json` file which can be parsed by
+# the majority of standard IDEs and language servers (e.g. clangd) to provide
+# completion etc.
 compile_commands.json: $(COMPDB_ENTRIES)
 	@echo "[" > $@.tmp
 	@cat $^ >> $@.tmp

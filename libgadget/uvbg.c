@@ -24,7 +24,7 @@
 #include <gsl/gsl_integration.h>
 
 #include "uvbg.h"
-#include "utils.h"
+#include "utils.h"  // NOQA
 #include "allvars.h"
 #include "partmanager.h"
 #include "petapm.h"
@@ -182,7 +182,13 @@ static inline int compare_ptrdiff(const void* a, const void* b)
 {
     ptrdiff_t result = *(ptrdiff_t*)a - *(ptrdiff_t*)b;
 
-    return (int)result;
+    int rt = 0;
+    if (result > 0)
+        rt = 1;
+    else if (result < 0)
+        rt = -1;
+
+    return rt;
 }
 
 
@@ -247,7 +253,6 @@ int grid_index(int i, int j, int k, int dim, index_type type)
 
 static void populate_grids()
 {
-    // TODO(smutch): Is this stored somewhere globally?
     int nranks = -1, this_rank = -1;
     MPI_Comm_size(MPI_COMM_WORLD, &nranks);
     MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
@@ -581,40 +586,38 @@ static void find_HII_bubbles()
 
 
         // ============================================================================================================
-        // {
-        //     // DEBUG HERE
-        //     const int grid_size = (int)(local_nix * UVBG_DIM * UVBG_DIM);
-        //     float* grid = (float*)calloc(grid_size, sizeof(float));
-        //     int count_gtz = 0;
-        //     for (int ii = 0; ii < local_nix; ii++)
-        //         for (int jj = 0; jj < UVBG_DIM; jj++)
-        //             for (int kk = 0; kk < UVBG_DIM; kk++) {
-        //                 grid[grid_index(ii, jj, kk, UVBG_DIM, INDEX_REAL)] = ((float*)deltax_filtered)[grid_index(ii, jj, kk, UVBG_DIM, INDEX_PADDED)];
-        //                 if (grid[grid_index(ii, jj, kk, UVBG_DIM, INDEX_REAL)] > 0)
-        //                     count_gtz++;
-        //             }
+        {
+            // DEBUG HERE
+            const int grid_size = (int)(local_nix * UVBG_DIM * UVBG_DIM);
+            float* grid = (float*)calloc(grid_size, sizeof(float));
+            int count_gtz = 0;
+            for (int ii = 0; ii < local_nix; ii++)
+                for (int jj = 0; jj < UVBG_DIM; jj++)
+                    for (int kk = 0; kk < UVBG_DIM; kk++) {
+                        grid[grid_index(ii, jj, kk, UVBG_DIM, INDEX_REAL)] = ((float*)deltax_filtered)[grid_index(ii, jj, kk, UVBG_DIM, INDEX_PADDED)];
+                        if (grid[grid_index(ii, jj, kk, UVBG_DIM, INDEX_REAL)] > 0)
+                            count_gtz++;
+                    }
 
-        //     message(0, "count_gtz for filter R=%.2f = %d\n", R, count_gtz);
+            message(0, "count_gtz for filter R=%.2f = %d\n", R, count_gtz);
 
-        //     BigFile fout;
-        //     char fname[256];
-        //     sprintf(fname, "output/filterstep-%.2f.bf", R);
-        //     big_file_mpi_create(&fout, fname, MPI_COMM_WORLD);
-        //     BigBlock block;
-        //     int n_ranks;
-        //     MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
-        //     big_file_mpi_create_block(&fout, &block, "deltax", "=f4", 1, n_ranks, UVBG_DIM*UVBG_DIM*UVBG_DIM, MPI_COMM_WORLD);
-        //     BigBlockPtr ptr = {0};
-        //     int start_elem = this_rank > 1 ? UVBGgrids.slab_nix[this_rank - 1]*UVBG_DIM*UVBG_DIM : 0;
-        //     big_block_seek(&block, &ptr, start_elem);
-        //     BigArray arr = {0};
-        //     big_array_init(&arr, grid, "=f4", 1, (size_t[]){grid_size}, NULL);
-        //     big_block_mpi_write(&block, &ptr, &arr, 1, MPI_COMM_WORLD);
-        //     big_block_mpi_close(&block, MPI_COMM_WORLD);
-        //     big_file_mpi_close(&fout, MPI_COMM_WORLD);
+            BigFile fout;
+            char fname[256];
+            sprintf(fname, "output/filterstep-%.2f.bf", R);
+            big_file_mpi_create(&fout, fname, MPI_COMM_WORLD);
+            BigBlock block;
+            int n_ranks;
+            MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
+            big_file_mpi_create_block(&fout, &block, "deltax", "=f4", 1, n_ranks, UVBG_DIM*UVBG_DIM*UVBG_DIM, MPI_COMM_WORLD);
+            BigBlockPtr ptr = {0};
+            BigArray arr = {0};
+            big_array_init(&arr, grid, "=f4", 1, (size_t[]){grid_size}, NULL);
+            big_block_mpi_write(&block, &ptr, &arr, 1, MPI_COMM_WORLD);
+            big_block_mpi_close(&block, MPI_COMM_WORLD);
+            big_file_mpi_close(&fout, MPI_COMM_WORLD);
 
-        //     free(grid);
-        // }
+            free(grid);
+        }
         // ============================================================================================================
 
 
@@ -748,26 +751,26 @@ void calculate_uvbg()
     walltime_measure("/UVBG/populate_grids");
 
     // DEBUG =========================================================================================
-    // int this_rank;
-    // MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
-    // int local_nix = UVBGgrids.slab_nix[this_rank];
-    // int grid_size = (size_t)(local_nix * UVBG_DIM * UVBG_DIM);
-    // float* grid = (float*)calloc(grid_size, sizeof(float));
-    // for (int ii = 0; ii < local_nix; ii++)
-    //     for (int jj = 0; jj < UVBG_DIM; jj++)
-    //         for (int kk = 0; kk < UVBG_DIM; kk++)
-    //             grid[grid_index(ii, jj, kk, UVBG_DIM, INDEX_REAL)] = (UVBGgrids.deltax)[grid_index(ii, jj, kk, UVBG_DIM, INDEX_PADDED)];
+    int this_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
+    int local_nix = UVBGgrids.slab_nix[this_rank];
+    int grid_size = (size_t)(local_nix * UVBG_DIM * UVBG_DIM);
+    float* grid = (float*)calloc(grid_size, sizeof(float));
+    for (int ii = 0; ii < local_nix; ii++)
+        for (int jj = 0; jj < UVBG_DIM; jj++)
+            for (int kk = 0; kk < UVBG_DIM; kk++)
+                grid[grid_index(ii, jj, kk, UVBG_DIM, INDEX_REAL)] = (UVBGgrids.deltax)[grid_index(ii, jj, kk, UVBG_DIM, INDEX_PADDED)];
 
-    // FILE *fout;
-    // char fname[128];
-    // sprintf(fname, "output/dump_r%03d.dat", this_rank);
-    // if((fout = fopen(fname, "wb")) == NULL) {
-    //   endrun(1, "poop...");
-    // }
-    // fwrite(grid, sizeof(float), grid_size, fout);
-    // fclose(fout);
-    // free(grid);
-    // walltime_measure("/Misc");
+    FILE *fout;
+    char fname[128];
+    sprintf(fname, "output/dump_r%03d.dat", this_rank);
+    if((fout = fopen(fname, "wb")) == NULL) {
+      endrun(1, "poop...");
+    }
+    fwrite(grid, sizeof(float), grid_size, fout);
+    fclose(fout);
+    free(grid);
+    walltime_measure("/Misc");
     // ===============================================================================================
 
 
